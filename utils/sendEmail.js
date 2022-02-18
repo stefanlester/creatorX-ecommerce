@@ -10,7 +10,6 @@ const sendEmail =  async ({ to, subject, html }) =>{
         from: '"creatorX👻" <stefanamoah001@gmail.com>', // sender address
         to,
         subject,
-        text,
         html,
       });
 }

@@ -1,7 +1,11 @@
 const User = require("../models/User");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
-const { attachCookiesToResponse, createTokenUser, sendVerficationEmail } = require("../utils");
+const {
+  attachCookiesToResponse,
+  createTokenUser,
+  sendVerificationEmail,
+} = require("../utils");
 const crypto = require("crypto");
 
 const register = async (req, res) => {
@@ -16,7 +20,7 @@ const register = async (req, res) => {
   const isFirstAccount = (await User.countDocuments({})) === 0;
   const role = isFirstAccount ? "admin" : "user";
 
-  const verificationToken = crypto.randomBytes(40).toString('hex');
+  const verificationToken = crypto.randomBytes(40).toString("hex");
 
   const user = await User.create({
     name,
@@ -26,13 +30,18 @@ const register = async (req, res) => {
     verificationToken,
   });
 
-  await sendEmail()
+  const origin = "http://localhost:3000";
+
+  await sendVerificationEmail({
+    name: user.name,
+    email: user.email,
+    verificationToken: user.verificationToken,
+    origin,
+  });
   // send verification token back only when testing in postman!!
-  res
-    .status(StatusCodes.CREATED)
-    .json({ 
-      msg: 'Success! Please check your email to verify account', 
-    });
+  res.status(StatusCodes.CREATED).json({
+    msg: "Success! Please check your email to verify account",
+  });
 };
 
 const verifyEmail = async (req, res) => {
@@ -42,18 +51,18 @@ const verifyEmail = async (req, res) => {
     throw new CustomError.UnauthenticatedError("Verification Failed");
   }
 
-  if(user.verificationToken !== verificationToken){
+  if (user.verificationToken !== verificationToken) {
     throw new CustomError.UnauthenticatedError("Verification Failed");
   }
 
-  (user.isVerified = true), (user.verified = Date.now())
-  
-  user.verificationToken = ''
+  (user.isVerified = true), (user.verified = Date.now());
 
-  await user.save()
+  user.verificationToken = "";
 
-  res.status(StatusCodes.OK).json({ msg: 'Email Verified' })
-}
+  await user.save();
+
+  res.status(StatusCodes.OK).json({ msg: "Email Verified" });
+};
 
 const login = async (req, res) => {
   const { email, password } = req.body;
@@ -62,7 +71,7 @@ const login = async (req, res) => {
     throw new CustomError.BadRequestError("Please provide email and password");
   }
   const user = await User.findOne({ email });
- 
+
   if (!user) {
     throw new CustomError.UnauthenticatedError("Invalid Credentials");
   }
@@ -71,13 +80,13 @@ const login = async (req, res) => {
   if (!isPasswordCorrect) {
     throw new CustomError.UnauthenticatedError("Invalid Credentials");
   }
-  if(!user.isVerified){
-    throw new CustomError.UnauthenticatedError("Please verify your email")
+  if (!user.isVerified) {
+    throw new CustomError.UnauthenticatedError("Please verify your email");
   }
 
   const tokenUser = createTokenUser(user);
   attachCookiesToResponse({ res, user: tokenUser });
-  res.status(StatusCodes.OK).json({ msg: "user logged in" })
+  res.status(StatusCodes.OK).json({ msg: "user logged in" });
 };
 
 const logout = async (req, res) => {
@@ -92,5 +101,5 @@ module.exports = {
   register,
   login,
   logout,
-  verifyEmail
+  verifyEmail,
 };
