@@ -1,5 +1,7 @@
 const User = require("../models/User");
-const { StatusCodes } = require("http-status-codes");
+const {
+  StatusCodes
+} = require("http-status-codes");
 const CustomError = require("../errors");
 const {
   attachCookiesToResponse,
@@ -9,9 +11,15 @@ const {
 const crypto = require("crypto");
 
 const register = async (req, res) => {
-  const { email, name, password } = req.body;
+  const {
+    email,
+    name,
+    password
+  } = req.body;
 
-  const emailAlreadyExists = await User.findOne({ email });
+  const emailAlreadyExists = await User.findOne({
+    email
+  });
   if (emailAlreadyExists) {
     throw new CustomError.BadRequestError("Email already exists");
   }
@@ -45,8 +53,13 @@ const register = async (req, res) => {
 };
 
 const verifyEmail = async (req, res) => {
-  const { verificationToken, email } = req.body;
-  const user = await User.findOne({ email });
+  const {
+    verificationToken,
+    email
+  } = req.body;
+  const user = await User.findOne({
+    email
+  });
   if (!user) {
     throw new CustomError.UnauthenticatedError("Verification Failed");
   }
@@ -61,16 +74,23 @@ const verifyEmail = async (req, res) => {
 
   await user.save();
 
-  res.status(StatusCodes.OK).json({ msg: "Email Verified" });
+  res.status(StatusCodes.OK).json({
+    msg: "Email Verified"
+  });
 };
 
 const login = async (req, res) => {
-  const { email, password } = req.body;
+  const {
+    email,
+    password
+  } = req.body;
 
   if (!email || !password) {
     throw new CustomError.BadRequestError("Please provide email and password");
   }
-  const user = await User.findOne({ email });
+  const user = await User.findOne({
+    email
+  });
 
   if (!user) {
     throw new CustomError.UnauthenticatedError("Invalid Credentials");
@@ -85,8 +105,13 @@ const login = async (req, res) => {
   }
 
   const tokenUser = createTokenUser(user);
-  attachCookiesToResponse({ res, user: tokenUser });
-  res.status(StatusCodes.OK).json({ msg: "user logged in" });
+  attachCookiesToResponse({
+    res,
+    user: tokenUser
+  });
+  res.status(StatusCodes.OK).json({
+    msg: "user logged in"
+  });
 };
 
 const logout = async (req, res) => {
@@ -94,7 +119,9 @@ const logout = async (req, res) => {
     httpOnly: true,
     expires: new Date(Date.now() + 1000),
   });
-  res.status(StatusCodes.OK).json({ msg: "user logged out!" });
+  res.status(StatusCodes.OK).json({
+    msg: "user logged out!"
+  });
 };
 
 module.exports = {
