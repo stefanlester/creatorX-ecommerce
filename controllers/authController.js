@@ -18,7 +18,7 @@ const register = async (req, res) => {
   } = req.body;
 
   const emailAlreadyExists = await User.findOne({
-    email
+    email,
   });
   if (emailAlreadyExists) {
     throw new CustomError.BadRequestError("Email already exists");
@@ -58,7 +58,7 @@ const verifyEmail = async (req, res) => {
     email
   } = req.body;
   const user = await User.findOne({
-    email
+    email,
   });
   if (!user) {
     throw new CustomError.UnauthenticatedError("Verification Failed");
@@ -75,7 +75,7 @@ const verifyEmail = async (req, res) => {
   await user.save();
 
   res.status(StatusCodes.OK).json({
-    msg: "Email Verified"
+    msg: "Email Verified",
   });
 };
 
@@ -89,7 +89,7 @@ const login = async (req, res) => {
     throw new CustomError.BadRequestError("Please provide email and password");
   }
   const user = await User.findOne({
-    email
+    email,
   });
 
   if (!user) {
@@ -107,10 +107,10 @@ const login = async (req, res) => {
   const tokenUser = createTokenUser(user);
   attachCookiesToResponse({
     res,
-    user: tokenUser
+    user: tokenUser,
   });
   res.status(StatusCodes.OK).json({
-    msg: "user logged in"
+    msg: "user logged in",
   });
 };
 
@@ -120,7 +120,7 @@ const logout = async (req, res) => {
     expires: new Date(Date.now() + 1000),
   });
   res.status(StatusCodes.OK).json({
-    msg: "user logged out!"
+    msg: "user logged out!",
   });
 };
 
